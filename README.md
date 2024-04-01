@@ -18,5 +18,5 @@ npm install
 3. To start the server, use the following command:
 
 ```shellscript
-npm index.js
+node index.js
 ```
