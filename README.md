@@ -15,3 +15,8 @@ https://github.com/ANKIT-BISWAS-20/E-Learning-Server.git
 ```shellscript
 npm install
 ```
+3. To start the server, use the following command:
+
+```shellscript
+npm index.js
+```
