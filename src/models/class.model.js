@@ -38,4 +38,4 @@ const classSchema = new Schema(
 
 classSchema.plugin(mongooseAggregatePaginate)
 
-export const Class = mongoose.model("Video", classSchema)
+export const Class = mongoose.model("Class", classSchema)

@@ -1,25 +1,24 @@
 import mongoose, {Schema} from "mongoose";
 
-const chatSchema = new Schema(
+const classMemberSchema = new Schema(
     {
-        sender: {
+        Member: {
             type: Schema.Types.ObjectId,
             ref: "User",
             required: true
         },
-        receiver: {
+        class: {
             type: Schema.Types.ObjectId,
-            ref: "User",
+            ref: "Class",
             required: true
         },
-        message: {
+        role: {
             type: String, 
             required: true,
         },
-        isSeen: {
-            type: Boolean, 
-            required: true,
-            default: false
+        Status: {
+            type: String,
+            default: "pending"
         }
 
     }, 
@@ -29,4 +28,4 @@ const chatSchema = new Schema(
 )
 
 
-export const Chat = mongoose.model("Chat", chatSchema)
+export const ClassMember = mongoose.model("ClassMember", classMemberSchema)
