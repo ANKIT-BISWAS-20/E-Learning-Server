@@ -79,8 +79,41 @@ const createClass = asyncHandler( async (req, res) => {
 
 
 
+const updateClass = asyncHandler( async (req, res) => {
+    
+        const {classname,title,description,category} = req.body
+        const classId = req.params.id
+    
+        if (
+            [classname, title, description, category].some((field) => field?.trim() === "")
+        ) {
+            throw new ApiError(400, "All fields are required")
+        }
+    
+        const myClass = await Class.findById(classId)
+    
+        if (!myClass) {
+            throw new ApiError(404, "Class not found")
+        }
+    
+        myClass.classname = classname
+        myClass.title = title
+        myClass.description = description
+        myClass.category = category
+
+        myClass.save()
+
+        const updatedClass = await Class.findById(myClass._id)
+
+        return res.status(200).json(
+            new ApiResponse(200, updatedClass, "Class Updated Successfully")
+        )
+})
+
+
 
 
 export {
     createClass,
+    updateClass
 }

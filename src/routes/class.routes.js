@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { createClass } from "../controllers/class.controller.js";
+import { createClass , updateClass} from "../controllers/class.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { isMentor } from "../middlewares/isMentor.middleware.js";
+import { isClassOwner } from "../middlewares/isClassOwner.middleware.js";
 import { isStudent } from "../middlewares/isStudent.middleware.js";
 
 const router = Router()
@@ -18,6 +19,12 @@ router.route("/create").post(
         }
     ]),
     createClass
+)
+
+router.route("/update").patch(
+    verifyJWT,
+    isClassOwner,
+    updateClass
 )
 
 export default router
