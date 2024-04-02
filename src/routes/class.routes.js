@@ -5,6 +5,7 @@ import { createClass ,
        joinClass,
         leaveClass,
         acceptJoinInvitation,
+        rejectJoinInvitation,
 } from "../controllers/class.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -50,6 +51,12 @@ router.route("/accept-join-invitation").patch(
     verifyJWT,
     isClassOwner,
     acceptJoinInvitation
+)
+
+router.route("/reject-join-invitation").patch(
+    verifyJWT,
+    isClassOwner,
+    rejectJoinInvitation
 )
 
 // Student Routes
