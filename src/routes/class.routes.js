@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createClass , updateClass, updateThumbnail, joinClass} from "../controllers/class.controller.js";
+import { createClass , updateClass, updateThumbnail, joinClass, leaveClass} from "../controllers/class.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { isMentor } from "../middlewares/isMentor.middleware.js";
@@ -48,6 +48,12 @@ router.route("/join").post(
     verifyJWT,
     isStudent,
     joinClass
+)
+
+router.route("/leave").delete(
+    verifyJWT,
+    isStudent,
+    leaveClass
 )
 
 

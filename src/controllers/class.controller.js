@@ -186,10 +186,39 @@ const joinClass = asyncHandler( async (req, res) => {
 })
 
 
+const leaveClass = asyncHandler( async (req, res) => {
+            
+            const classId = req.params.id
+            const current_user = await User.findById(req.user?._id)
+        
+            const myClass = await Class.findById(classId)
+        
+            if (!myClass) {
+                throw new ApiError(404, "Class not found")
+            }
+        
+            const classMember = await ClassMember.findOne({
+                class: classId,
+                member: current_user._id
+            })
+        
+            if (!classMember) {
+                throw new ApiError(400, "You are not a member of this class")
+            }
+        
+            await ClassMember.findByIdAndDelete(classMember._id)
+    
+            return res.status(200).json(
+                new ApiResponse(200, null, "You have left the class successfully")
+            )
+})
+
+
 
 export {
     createClass,
     updateClass,
     updateThumbnail,
-    joinClass
+    joinClass,
+    leaveClass
 }
