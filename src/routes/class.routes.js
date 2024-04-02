@@ -7,6 +7,7 @@ import { createClass ,
         acceptJoinInvitation,
         rejectJoinInvitation,
         getAllClassesForStudent,
+        getMyClassesForStudent,
 } from "../controllers/class.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -78,6 +79,12 @@ router.route("/get-all-classes-for-student").get(
     verifyJWT,
     isStudent,
     getAllClassesForStudent
+)
+
+router.route("/get-my-classes-for-student").get(
+    verifyJWT,
+    isStudent,
+    getMyClassesForStudent
 )
 
 

@@ -287,7 +287,16 @@ const getAllClassesForStudent = asyncHandler( async (req, res) => {
                 from: "users",
                 localField: "owner",
                 foreignField: "_id",
-                as: "owner"
+                as: "owner",
+                pipeline: [
+                    {
+                        $project: {
+                            _id: 1,
+                            name: 1,
+                            email: 1,
+                        }
+                    }
+                ]
             }
         },
         {
@@ -307,11 +316,6 @@ const getAllClassesForStudent = asyncHandler( async (req, res) => {
                 thumbnail: 1,
                 owner: {
                     $first: "$owner",
-                    $project: {
-                        _id: 1,
-                        name: 1,
-                        email: 1,
-                    }
                 },
                 members: {
                     $size: {
@@ -343,6 +347,103 @@ const getAllClassesForStudent = asyncHandler( async (req, res) => {
     )
 })
 
+const getMyClassesForStudent = asyncHandler( async (req, res) => {
+    const current_user = await User.findById(req.user?._id)
+    const myClasses = await ClassMember.aggregate([
+        {
+            $match: {
+                member: mongoose.Types.ObjectId(current_user._id)
+            }
+        },
+        {
+            $lookup: {
+                from: "classes",
+                localField: "class",
+                foreignField: "_id",
+                as: "class",
+                pipeline: [
+                    {
+                        $lookup: {
+                            from: "classmembers",
+                            localField: "_id",
+                            foreignField: "class",
+                            as: "members",
+                            pipeline: [
+                                {
+                                    $match: {
+                                        status: "accepted"
+                                    }
+                                },
+                                {
+                                    $size: {
+                                        $filter: {
+                                            input: "$members",
+                                            as: "member",
+                                            cond: [
+                                                { $eq: ["$$member.role", "student"] }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        $project: {
+                            classname: 1,
+                            title: 1,
+                            description: 1,
+                            category: 1,
+                            thumbnail: 1,
+                            owner: {
+                                pipeline: [
+                                    {
+                                        $lookup: {
+                                            from: "users",
+                                            localField: "owner",
+                                            foreignField: "_id",
+                                            as: "owner",
+                                            pipeline: [
+                                                {
+                                                    $project: {
+                                                        _id: 1,
+                                                        name: 1,
+                                                        email: 1,
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                ]
+                            },
+                            members: 1,
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $project: {
+                class: {
+                    $first: "$class"
+                },
+                role: 1,
+                owner: {
+                    $first: "$owner"
+                },
+                members: 1,
+            }
+        }
+    ])
+
+
+    return res.status(200).json(
+        new ApiResponse(200, myClasses, "My Classes fetched successfully")
+    )
+
+})
+
+
+
+
 
 export {
     createClass,
@@ -353,4 +454,5 @@ export {
     acceptJoinInvitation,
     rejectJoinInvitation,
     getAllClassesForStudent,
+    getMyClassesForStudent
 }
