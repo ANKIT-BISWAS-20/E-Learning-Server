@@ -216,22 +216,54 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 })
 
 const updateAccountDetails = asyncHandler(async(req, res) => {
-    const {fullName, email} = req.body
+    const {fullName, email, username, contactNo, dob, address, language, institution, standard,role} = req.body
 
     if (!fullName || !email) {
         throw new ApiError(400, "All fields are required")
     }
 
+    const current_user = await User.findById(req.user?._id)
+    if (current_user.email !== email) {
+
+        const existedUser = await User.findOne({
+            email:email
+        })
+
+        if (existedUser) {
+            throw new ApiError(409, "User with email already exists")
+        }
+    }
+    if (current_user.username !== username) {
+
+        const existedUser = await User.findOne({
+            username:username
+        })
+
+        if (existedUser) {
+            throw new ApiError(409, "User with username already exists")
+        }
+    }
+
+
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set: {
-                fullName,
-                email: email
+                fullName, 
+                email, 
+                username, 
+                contactNo, 
+                DOB: new Date(dob), 
+                address, 
+                language, 
+                institution, 
+                standard,
+                role
             }
         },
-        {new: true}
-        
+        {
+            new: true
+        }
     ).select("-password")
 
     return res
@@ -271,4 +303,4 @@ const updateUserAvatar = asyncHandler(async(req, res) => {
 })
 
 
-export {registerUser,loginUser,logoutUser,refreshAccessToken,updateUserAvatar}
+export {registerUser,loginUser,logoutUser,refreshAccessToken,updateUserAvatar,updateAccountDetails}
