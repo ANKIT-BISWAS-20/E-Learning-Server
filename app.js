@@ -20,6 +20,10 @@ app.use("/",serverStatusRouter);
 import userRouter from './src/routes/user.routes.js'
 app.use("/api/v1/users", userRouter)
 
+// Class Endpoints
+import classRouter from './src/routes/class.routes.js'
+app.use("/api/v1/classes", classRouter)
+
 
 
 export { app }
