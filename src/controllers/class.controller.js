@@ -278,6 +278,70 @@ const leaveClass = asyncHandler( async (req, res) => {
             )
 })
 
+//TODO: Get Student Class
+
+const getAllClassesForStudent = asyncHandler( async (req, res) => {
+    const classes = await Class.aggregate([
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "owner"
+            }
+        },
+        {
+            $lookup: {
+                from: "classmembers",
+                localField: "_id",
+                foreignField: "class",
+                as: "members"
+            }
+        },
+        {
+            $project: {
+                classname: 1,
+                title: 1,
+                description: 1,
+                category: 1,
+                thumbnail: 1,
+                owner: {
+                    $first: "$owner",
+                    $project: {
+                        _id: 1,
+                        name: 1,
+                        email: 1,
+                    }
+                },
+                members: {
+                    $size: {
+                        $filter: {
+                            input: "$members",
+                            as: "member",
+                            cond: [
+                                { $and: 
+                                    [
+                                        { 
+                                            $eq: ["$$member.status", "accepted"] 
+                                        },
+                                        { 
+                                            $eq: ["$$member.role", "student"] 
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    ]);
+
+
+    return res.status(200).json(
+        new ApiResponse(200, classes, "Classes fetched successfully")
+    )
+})
 
 
 export {
@@ -288,4 +352,5 @@ export {
     leaveClass,
     acceptJoinInvitation,
     rejectJoinInvitation,
+    getAllClassesForStudent,
 }

@@ -6,6 +6,7 @@ import { createClass ,
         leaveClass,
         acceptJoinInvitation,
         rejectJoinInvitation,
+        getAllClassesForStudent,
 } from "../controllers/class.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -71,6 +72,12 @@ router.route("/leave").delete(
     verifyJWT,
     isStudent,
     leaveClass
+)
+
+router.route("/get-all-classes-for-student").get(
+    verifyJWT,
+    isStudent,
+    getAllClassesForStudent
 )
 
 
