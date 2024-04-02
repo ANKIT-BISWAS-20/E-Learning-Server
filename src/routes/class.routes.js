@@ -10,6 +10,7 @@ import { createClass ,
         getMyClassesForStudent,
         getMyClassesForMentor,
         getAllMentorsForStudent,
+        removeStudentFromClass,
 } from "../controllers/class.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -67,6 +68,12 @@ router.route("/get-my-classes-for-mentor").get(
     verifyJWT,
     isMentor,
     getMyClassesForMentor
+)
+
+router.route("/remove-student-from-class").delete(
+    verifyJWT,
+    isClassOwner,
+    removeStudentFromClass
 )
 
 // Student Routes

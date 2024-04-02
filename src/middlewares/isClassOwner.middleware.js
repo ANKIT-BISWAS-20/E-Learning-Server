@@ -12,7 +12,7 @@ dotenv.config({
 export const isClassOwner = asyncHandler(async(req, res, next) => {
     try {
         const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
-        const classId = req.params.id
+        const classId = req.query.id
         if (!token) {
             throw new ApiError(401, "Unauthorized request")
         }

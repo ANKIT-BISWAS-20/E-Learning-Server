@@ -297,7 +297,31 @@ const getMyClassesForMentor = asyncHandler( async (req, res) => {
     )
 })
 
+const removeStudentFromClass = asyncHandler( async (req, res) => {
+    const classId = req.query.id
+    const memberId = req.query.memberId
 
+    const myClass = await Class.findById(classId)
+
+    if (!myClass) {
+        throw new ApiError(404, "Class not found")
+    }
+
+    const classMember = await ClassMember.findOne({
+        class: classId,
+        member: memberId
+    })
+
+    if (!classMember) {
+        throw new ApiError(404, "Member not found")
+    }
+
+    await ClassMember.findByIdAndDelete(classMember._id)
+
+    return res.status(200).json(
+        new ApiResponse(200, [], "Member removed successfully")
+    )
+})
 
 
 
@@ -814,5 +838,6 @@ export {
     getAllClassesForStudent,
     getMyClassesForStudent,
     getMyClassesForMentor,
-    getAllMentorsForStudent
+    getAllMentorsForStudent,
+    removeStudentFromClass
 }
