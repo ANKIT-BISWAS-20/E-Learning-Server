@@ -9,6 +9,7 @@ import { createClass ,
         getAllClassesForStudent,
         getMyClassesForStudent,
         getMyClassesForMentor,
+        getAllMentorsForStudent,
 } from "../controllers/class.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -92,6 +93,12 @@ router.route("/get-my-classes-for-student").get(
     verifyJWT,
     isStudent,
     getMyClassesForStudent
+)
+
+router.route("/get-all-mentors-for-student").get(
+    verifyJWT,
+    isStudent,
+    getAllMentorsForStudent
 )
 
 
