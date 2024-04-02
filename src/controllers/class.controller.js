@@ -145,8 +145,51 @@ const updateThumbnail = asyncHandler( async (req, res) => {
 
 
 
+
+
+
+
+// Student Class Controllers
+
+const joinClass = asyncHandler( async (req, res) => {
+        
+        const classId = req.params.id
+        const current_user = await User.findById(req.user?._id)
+    
+        const myClass = await Class.findById(classId)
+    
+        if (!myClass) {
+            throw new ApiError(404, "Class not found")
+        }
+    
+        const classMember = await ClassMember.findOne({
+            class: classId,
+            member: current_user._id
+        })
+    
+        if (classMember) {
+            throw new ApiError(400, "You are already a member of this class")
+        }
+    
+        await ClassMember.create({
+            class: classId,
+            member: current_user._id,
+            role: "student",
+            status: "pending"
+        })
+    
+        const createdClassMember = await ClassMember.findById(ClassMember._id)
+
+        return res.status(200).json(
+            new ApiResponse(200, createdClassMember, "Request to join class sent successfully")
+        )
+})
+
+
+
 export {
     createClass,
     updateClass,
-    updateThumbnail
+    updateThumbnail,
+    joinClass
 }

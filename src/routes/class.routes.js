@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createClass , updateClass, updateThumbnail} from "../controllers/class.controller.js";
+import { createClass , updateClass, updateThumbnail, joinClass} from "../controllers/class.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { isMentor } from "../middlewares/isMentor.middleware.js";
@@ -8,7 +8,7 @@ import { isStudent } from "../middlewares/isStudent.middleware.js";
 
 const router = Router()
 
-
+// Mentor Routes
 router.route("/create").post(
     verifyJWT,
     isMentor,
@@ -38,5 +38,18 @@ router.route("/update-thumbnail").patch(
     ]),
     updateThumbnail
 )
+// TODO: delete class
+
+
+
+// Student Routes
+
+router.route("/join").post(
+    verifyJWT,
+    isStudent,
+    joinClass
+)
+
+
 
 export default router
