@@ -8,6 +8,7 @@ import { createClass ,
         rejectJoinInvitation,
         getAllClassesForStudent,
         getMyClassesForStudent,
+        getMyClassesForMentor,
 } from "../controllers/class.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -59,6 +60,12 @@ router.route("/reject-join-invitation").patch(
     verifyJWT,
     isClassOwner,
     rejectJoinInvitation
+)
+
+router.route("/get-my-classes-for-mentor").get(
+    verifyJWT,
+    isMentor,
+    getMyClassesForMentor
 )
 
 // Student Routes
