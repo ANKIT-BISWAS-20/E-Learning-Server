@@ -167,8 +167,11 @@ const joinClass = asyncHandler( async (req, res) => {
             member: current_user._id
         })
     
-        if (classMember) {
+        if (classMember.status === "accepted") {
             throw new ApiError(400, "You are already a member of this class")
+        }
+        if (classMember.status === "pending") {
+            throw new ApiError(400, "You have already requested to join this class")
         }
     
         await ClassMember.create({
@@ -187,7 +190,7 @@ const joinClass = asyncHandler( async (req, res) => {
 
 
 const leaveClass = asyncHandler( async (req, res) => {
-            
+            //TODO: Delete all assignments
             const classId = req.params.id
             const current_user = await User.findById(req.user?._id)
         
