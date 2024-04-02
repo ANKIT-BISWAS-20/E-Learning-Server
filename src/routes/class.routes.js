@@ -1,5 +1,11 @@
 import { Router } from "express";
-import { createClass , updateClass, updateThumbnail, joinClass, leaveClass} from "../controllers/class.controller.js";
+import { createClass ,
+     updateClass,
+      updateThumbnail,
+       joinClass,
+        leaveClass,
+        acceptJoinInvitation,
+} from "../controllers/class.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { isMentor } from "../middlewares/isMentor.middleware.js";
@@ -40,7 +46,11 @@ router.route("/update-thumbnail").patch(
 )
 // TODO: delete class
 
-
+router.route("/accept-join-invitation").patch(
+    verifyJWT,
+    isClassOwner,
+    acceptJoinInvitation
+)
 
 // Student Routes
 

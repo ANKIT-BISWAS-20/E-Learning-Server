@@ -142,6 +142,41 @@ const updateThumbnail = asyncHandler( async (req, res) => {
         )
 })
 
+//TODO: Delete Class
+
+
+const acceptJoinInvitation = asyncHandler( async (req, res) => {
+            
+            const classId = req.params.id
+            const memberId = req.body.memberId
+        
+            const myClass = await Class.findById(classId)
+        
+            if (!myClass) {
+                throw new ApiError(404, "Class not found")
+            }
+        
+            const classMember = await ClassMember.findOne({
+                class: classId,
+                member: memberId
+            })
+        
+            if (!classMember) {
+                throw new ApiError(404, "Member not found")
+            }
+        
+            classMember.status = "accepted"
+            classMember.save()
+    
+            const updatedClassMember = await ClassMember.findById(classMember._id)
+
+            return res.status(200).json(
+                new ApiResponse(200, updatedClassMember, "Member accepted successfully")
+            )
+})
+
+
+
 
 
 
@@ -223,5 +258,6 @@ export {
     updateClass,
     updateThumbnail,
     joinClass,
-    leaveClass
+    leaveClass,
+    acceptJoinInvitation,
 }
