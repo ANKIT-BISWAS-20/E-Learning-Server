@@ -42,11 +42,9 @@ const userSchema = new Schema({
         },
         institution:{
             type: String,
-            required: true,
         },
         standard:{
             type: String,
-            required: true,
         },
         avatar: {
             type: String, 
