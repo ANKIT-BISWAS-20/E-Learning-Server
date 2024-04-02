@@ -87,13 +87,95 @@ const getChatsWithMentor = asyncHandler( async (req, res) => {
 
     
 
-    return res.status(200).json(new ApiResponse(201, chats,"Chat created successfully"))
+    return res.status(200).json(new ApiResponse(201, chats,"Chat fetched successfully"))
+
+} )
+
+
+const getChatsWithStudent = asyncHandler( async (req, res) => {
+
+    const mentorId = req.user._id
+    const studentId = req.query.mentorId
+
+    if(!studentId) {
+        throw new ApiError(400, "Student is required")
+    }
+
+    const student = await User.findById(studentId)
+
+    if(!student) {
+        throw new ApiError(404, "Mentor not found")
+    }
+
+    const chats = await Chat.aggregate([
+        [
+            {
+                $match: {
+                    $or: [
+                        { studentId: mongoose.Types.ObjectId(studentId), mentorId: mongoose.Types.ObjectId(mentorId) },
+                        { studentId: mongoose.Types.ObjectId(mentorId), mentorId: mongoose.Types.ObjectId(studentId) }
+                    ]
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "mentorId",
+                    foreignField: "_id",
+                    as: "mentorInfo"
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "studentId",
+                    foreignField: "_id",
+                    as: "studentInfo"
+                }
+            },
+            {
+                $unwind: "$mentorInfo"
+            },
+            {
+                $unwind: "$studentInfo"
+            },
+            {
+                $project: {
+                    mentorInfo: {
+                        _id: 1,
+                        fulname: 1,
+                        email: 1,
+                        
+                    },
+                    studentInfo: {
+                        _id: 1,
+                        fulname: 1,
+                        email: 1,
+                        avatar: 1
+                    },
+                    createdAt: 1
+                }
+            },
+            {
+                $sort: {
+                    createdAt: -1
+                }
+            }
+        ]
+    ])
+
+    
+
+    return res.status(200).json(new ApiResponse(201, chats,"Chats fetched successfully"))
 
 } )
 
 
 
 
+
+
 export {
     getChatsWithMentor,
+    getChatsWithStudent,
 }
