@@ -24,6 +24,10 @@ app.use("/api/v1/users", userRouter)
 import classRouter from './src/routes/class.routes.js'
 app.use("/api/v1/classes", classRouter)
 
+// Chat Endpoints
+import chatRouter from './src/routes/chat.routes.js'
+app.use("/api/v1/chats", chatRouter)
+
 
 
 export { app }
