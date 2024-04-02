@@ -171,11 +171,73 @@ const getChatsWithStudent = asyncHandler( async (req, res) => {
 } )
 
 
+const chatWithMentor = asyncHandler( async (req, res) => {
+    
+        const mentorId = req.query.mentorId
+        const studentId = req.user._id
+        const message = req.body.message
+    
+        if(!mentorId) {
+            throw new ApiError(400, "Mentor is required")
+        }
+    
+        if(!message) {
+            throw new ApiError(400, "Message is required")
+        }
+    
+        const mentor = await User.findById(mentorId)
+    
+        if(!mentor) {
+            throw new ApiError(404, "Mentor not found")
+        }
+    
+        const chat = new Chat({
+            mentorId: mentorId,
+            studentId: studentId,
+            message: message
+        })
+    
+        await chat.save()
+    
+        return res.status(201).json(new ApiResponse(201, chat,"Chat created successfully"))
+} )
 
 
+const chatWithStudent = asyncHandler( async (req, res) => {
+        
+            const mentorId = req.user._id
+            const studentId = req.query.studentId
+            const message = req.body.message
+        
+            if(!studentId) {
+                throw new ApiError(400, "Student is required")
+            }
+        
+            if(!message) {
+                throw new ApiError(400, "Message is required")
+            }
+        
+            const student = await User.findById(studentId)
+        
+            if(!student) {
+                throw new ApiError(404, "Student not found")
+            }
+        
+            const chat = new Chat({
+                mentorId: mentorId,
+                studentId: studentId,
+                message: message
+            })
+        
+            await chat.save()
+        
+            return res.status(201).json(new ApiResponse(201, chat,"Chat created successfully"))
+})
 
 
 export {
     getChatsWithMentor,
     getChatsWithStudent,
+    chatWithMentor,
+    chatWithStudent,
 }
