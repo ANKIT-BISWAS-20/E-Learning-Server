@@ -111,9 +111,42 @@ const updateClass = asyncHandler( async (req, res) => {
 })
 
 
+const updateThumbnail = asyncHandler( async (req, res) => {
+        
+        const classId = req.params.id
+    
+        const myClass = await Class.findById(classId)
+    
+        if (!myClass) {
+            throw new ApiError(404, "Class not found")
+        }
+    
+        const thumbnailLocalPath = req.files?.thumbnail[0]?.path;
+    
+        if (!thumbnailLocalPath) {
+            throw new ApiError(400, "Thumbnail file is required")
+        }
+    
+        const thumbnail = await uploadOnCloudinary(thumbnailLocalPath)
+        if (!thumbnail) {
+            throw new ApiError(400, "Thumbnail file is required")
+        }
+    
+        myClass.thumbnail = thumbnail.url
+        myClass.save()
+
+        const updatedClass = await Class.findById(myClass._id)
+
+        return res.status(200).json(
+            new ApiResponse(200, updatedClass, "Thumbnail Updated Successfully")
+        )
+})
+
+
 
 
 export {
     createClass,
-    updateClass
+    updateClass,
+    updateThumbnail
 }

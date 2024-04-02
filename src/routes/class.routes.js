@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createClass , updateClass} from "../controllers/class.controller.js";
+import { createClass , updateClass, updateThumbnail} from "../controllers/class.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { isMentor } from "../middlewares/isMentor.middleware.js";
@@ -25,6 +25,18 @@ router.route("/update").patch(
     verifyJWT,
     isClassOwner,
     updateClass
+)
+
+router.route("/update-thumbnail").patch(
+    verifyJWT,
+    isClassOwner,
+    upload.fields([
+        {
+            name: "thumbnail",
+            maxCount: 1
+        }
+    ]),
+    updateThumbnail
 )
 
 export default router
