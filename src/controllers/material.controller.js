@@ -17,6 +17,17 @@ dotenv.config({
 const uploadMaterial = asyncHandler( async (req, res) => {
     const classId = req.query.classId
     const userId = req.user._id
+
+    const classMember = await User.findOne({
+        _id: userId,
+        classes: classId,
+        role: "mentor",
+    })
+
+    if (!classMember) {
+        throw new ApiError(400, "You are not mentor of this class")
+    }
+
     const {name, description} = req.body
     if (
         [userId, name, classId, description].some((field) => field?.trim() === "")
