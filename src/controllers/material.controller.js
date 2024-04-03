@@ -6,6 +6,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose";
 import dotenv from "dotenv"
+import { ClassMember } from "../models/classMember.model.js";
 
 dotenv.config({
     path: './.env'
@@ -18,10 +19,11 @@ const uploadMaterial = asyncHandler( async (req, res) => {
     const classId = req.query.classId
     const userId = req.user._id
 
-    const classMember = await User.findOne({
-        _id: userId,
-        classes: classId,
+    const classMember = await ClassMember.findOne({
+        member: userId,
+        class: classId,
         role: "mentor",
+        status: "accepted"
     })
 
     if (!classMember) {
