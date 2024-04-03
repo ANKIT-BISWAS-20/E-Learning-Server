@@ -13,6 +13,7 @@ import { createClass ,
         removeStudentFromClass,
         getMyClassDashboardStudent,
         getMyClassDashboardMentor,
+        viewAllJoinInvitation
 } from "../controllers/class.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -53,6 +54,13 @@ router.route("/update-thumbnail").patch(
     updateThumbnail
 )
 // TODO: delete class
+
+
+router.route("/view-all-join-invitations").get(
+    verifyJWT,
+    isClassOwner,
+    viewAllJoinInvitation
+)
 
 router.route("/accept-join-invitation").patch(
     verifyJWT,

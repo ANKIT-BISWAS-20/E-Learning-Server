@@ -142,10 +142,60 @@ const updateThumbnail = asyncHandler( async (req, res) => {
 
 //TODO: Delete Class
 
+const viewAllJoinInvitation = asyncHandler( async (req, res) => {
+    const classId = req.query.id
+    const myClass = await Class.findById(classId)
+    if (!myClass) {
+        throw new ApiError(404, "Class not found")
+    }
+    const classMembers = await ClassMember.aggregate([
+        {
+            $match: {
+                class: mongoose.Types.ObjectId(classId),
+                status: "pending"
+            }
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "member",
+                foreignField: "_id",
+                as: "member",
+                pipeline: [
+                    {
+                        $project: {
+                            _id: 1,
+                            name: 1,
+                            email: 1,
+                            avatar: 1,
+                            role: 1
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            $project: {
+                _id: 1,
+                class: 1,
+                member: {
+                    $first: "$member"
+                },
+                role: 1,
+                status: 1
+            }
+        }
+    ])
+
+    return res.status(200).json(
+        new ApiResponse(200, classMembers, "Join Invitations fetched successfully")
+    )
+})
+
 
 const acceptJoinInvitation = asyncHandler( async (req, res) => {
             
-            const classId = req.params.id
+            const classId = req.query.id
             const memberId = req.body.memberId
         
             const myClass = await Class.findById(classId)
@@ -980,4 +1030,5 @@ export {
     removeStudentFromClass,
     getMyClassDashboardStudent,
     getMyClassDashboardMentor,
+    viewAllJoinInvitation,
 }
