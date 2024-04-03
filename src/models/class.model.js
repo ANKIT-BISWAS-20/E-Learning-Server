@@ -21,7 +21,7 @@ const classSchema = new Schema(
             required: true
         },
         category: {
-            type: Number, 
+            type: String, 
             required: true,
             index: true
         },

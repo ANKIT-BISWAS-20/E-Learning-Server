@@ -54,14 +54,12 @@ const createClass = asyncHandler( async (req, res) => {
         throw new ApiError(500, "Something went wrong while creating the class")
     }
 
-    await ClassMember.create({
+    const createdClassMember = await ClassMember.create({
         class: createdClass._id,
         member: current_user._id,
-        role: "teacher",
+        role: "mentor",
         status: "accepted"
     })
-
-    const createdClassMember = await ClassMember.findById(ClassMember._id)
 
     if (!createdClassMember) {
         throw new ApiError(500, "Something went wrong while creating the class")

@@ -2,7 +2,7 @@ import mongoose, {Schema} from "mongoose";
 
 const classMemberSchema = new Schema(
     {
-        Member: {
+        member: {
             type: Schema.Types.ObjectId,
             ref: "User",
             required: true
@@ -16,7 +16,7 @@ const classMemberSchema = new Schema(
             type: String, 
             required: true,
         },
-        Status: {
+        status: {
             type: String,
             default: "pending"
         }
