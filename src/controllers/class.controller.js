@@ -740,32 +740,7 @@ const getAllMentorsForStudent = asyncHandler( async (req, res) => {
                     name: 1,
                     email: 1,
                     role: 1,
-                    classes: {
-                        $lookup: {
-                            from: "classmembers",
-                            localField: "_id",
-                            foreignField: "member",
-                            as: "classes",
-                            pipeline: [
-                                {
-                                    $match: {
-                                        status: "accepted"
-                                    }
-                                },
-                                {
-                                    $size: {
-                                        $filter: {
-                                            input: "$classes",
-                                            as: "class",
-                                            cond: [
-                                                { $eq: ["$$class.role", "teacher"] }
-                                            ]
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
+                    avatar: 1
                 }
             }
         ])
@@ -787,32 +762,7 @@ const getAllMentorsForStudent = asyncHandler( async (req, res) => {
                     name: 1,
                     email: 1,
                     role: 1,
-                    classes: {
-                        $lookup: {
-                            from: "classmembers",
-                            localField: "_id",
-                            foreignField: "member",
-                            as: "classes",
-                            pipeline: [
-                                {
-                                    $match: {
-                                        status: "accepted"
-                                    }
-                                },
-                                {
-                                    $size: {
-                                        $filter: {
-                                            input: "$classes",
-                                            as: "class",
-                                            cond: [
-                                                { $eq: ["$$class.role", "teacher"] }
-                                            ]
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
+                    avatar: 1
                 }
             }
         ])
