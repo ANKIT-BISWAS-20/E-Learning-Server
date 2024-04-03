@@ -11,6 +11,8 @@ import { createClass ,
         getMyClassesForMentor,
         getAllMentorsForStudent,
         removeStudentFromClass,
+        getMyClassDashboardStudent,
+        getMyClassDashboardMentor,
 } from "../controllers/class.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -76,6 +78,12 @@ router.route("/remove-student-from-class").delete(
     removeStudentFromClass
 )
 
+router.route("/get-my-class-dashboard-mentor").get(
+    verifyJWT,
+    isMentor,
+    getMyClassDashboardMentor
+)
+
 // Student Routes
 
 router.route("/join").post(
@@ -106,6 +114,12 @@ router.route("/get-all-mentors-for-student").get(
     verifyJWT,
     isStudent,
     getAllMentorsForStudent
+)
+
+router.route("/get-my-class-dashboard-student").get(
+    verifyJWT,
+    isStudent,
+    getMyClassDashboardStudent
 )
 
 

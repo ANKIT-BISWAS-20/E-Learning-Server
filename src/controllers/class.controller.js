@@ -322,6 +322,102 @@ const removeStudentFromClass = asyncHandler( async (req, res) => {
 })
 
 
+const getMyClassDashboardMentor = asyncHandler( async (req, res) => {
+    const current_user = await User.findById(req.user?._id)
+    const classId = req.query.id
+    const myClass = await Class.findById(classId)
+    if (!myClass) {
+        throw new ApiError(404, "Class not found")
+    }
+    const classMember = await ClassMember.findOne({
+        class: classId,
+        member: current_user._id,
+        role: "mentor",
+        status: "accepted"
+    })
+    if (!classMember) {
+        throw new ApiError(401, "unauthorized")
+    }
+    const classInfo = await Class.aggregate([
+        {
+            $match: {
+                _id: mongoose.Types.ObjectId(classId)
+            }
+        },
+        {
+            $lookup: {
+                from: "classmembers",
+                localField: "_id",
+                foreignField: "class",
+                as: "members",
+                pipeline: [
+                    {
+                        $match: {
+                            status: "accepted"
+                        }
+                    },
+                    { 
+                        $lookup: {
+                            from: "users",
+                            localField: "member",
+                            foreignField: "_id",
+                            as: "member",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        _id: 1,
+                                        name: 1,
+                                        email: 1,
+                                        avatar: 1,
+                                        role: 1
+                                    }
+                                }
+                            ]
+                        }
+                    }
+
+                    
+                ]
+            },
+            $project: {
+                classname: 1,
+                title: 1,
+                description: 1,
+                category: 1,
+                thumbnail: 1,
+                owner: {
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: "users",
+                                localField: "owner",
+                                foreignField: "_id",
+                                as: "owner",
+                                pipeline: [
+                                    {
+                                        $project: {
+                                            _id: 1,
+                                            name: 1,
+                                            email: 1,
+                                            avatar: 1,
+                                            role: 1
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                members: 1,
+            }
+        }
+    ])
+    return res.status(200).json(
+        new ApiResponse(200, classInfo, "Class Info fetched successfully")
+    )
+})
+
+
 
 // Student Class Controllers
 
@@ -773,7 +869,101 @@ const getAllMentorsForStudent = asyncHandler( async (req, res) => {
     )
 })
 
+const getMyClassDashboardStudent = asyncHandler( async (req, res) => {
+    const current_user = await User.findById(req.user?._id)
+    const classId = req.query.id
+    const myClass = await Class.findById(classId)
+    if (!myClass) {
+        throw new ApiError(404, "Class not found")
+    }
+    const classMember = await ClassMember.findOne({
+        class: classId,
+        member: current_user._id,
+        role: "student",
+        status: "accepted"
+    })
+    if (!classMember) {
+        throw new ApiError(401, "unauthorized")
+    }
+    const classInfo = await Class.aggregate([
+        {
+            $match: {
+                _id: mongoose.Types.ObjectId(classId)
+            }
+        },
+        {
+            $lookup: {
+                from: "classmembers",
+                localField: "_id",
+                foreignField: "class",
+                as: "members",
+                pipeline: [
+                    {
+                        $match: {
+                            status: "accepted"
+                        }
+                    },
+                    { 
+                        $lookup: {
+                            from: "users",
+                            localField: "member",
+                            foreignField: "_id",
+                            as: "member",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        _id: 1,
+                                        name: 1,
+                                        email: 1,
+                                        avatar: 1,
+                                        role: 1
+                                    }
+                                }
+                            ]
+                        }
+                    }
 
+                    
+                ]
+            },
+            $project: {
+                classname: 1,
+                title: 1,
+                description: 1,
+                category: 1,
+                thumbnail: 1,
+                owner: {
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: "users",
+                                localField: "owner",
+                                foreignField: "_id",
+                                as: "owner",
+                                pipeline: [
+                                    {
+                                        $project: {
+                                            _id: 1,
+                                            name: 1,
+                                            email: 1,
+                                            avatar: 1,
+                                            role: 1
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                },
+                members: 1,
+            }
+        }
+    ])
+    return res.status(200).json(
+        new ApiResponse(200, classInfo, "Class Info fetched successfully")
+    )
+
+})
 
 export {
     createClass,
@@ -787,5 +977,7 @@ export {
     getMyClassesForStudent,
     getMyClassesForMentor,
     getAllMentorsForStudent,
-    removeStudentFromClass
+    removeStudentFromClass,
+    getMyClassDashboardStudent,
+    getMyClassDashboardMentor,
 }
