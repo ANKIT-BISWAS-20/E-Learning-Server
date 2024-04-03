@@ -30,9 +30,9 @@ const uploadMaterial = asyncHandler( async (req, res) => {
         throw new ApiError(400, "You are not mentor of this class")
     }
 
-    const {name, description} = req.body
+    const {name, description,type} = req.body
     if (
-        [userId, name, classId, description].some((field) => field?.trim() === "")
+        [userId, name, classId, description,type].some((field) => field?.trim() === "")
     ) {
         throw new ApiError(400, "All fields are required")
     }
@@ -56,6 +56,7 @@ const uploadMaterial = asyncHandler( async (req, res) => {
         name:name, 
         description:description,
         owner: current_user._id,
+        type:type,
     })
 
     const createdMaterial = await Material.findById(myMaterial._id)
@@ -101,8 +102,32 @@ const deleteMaterial = asyncHandler( async (req, res) => {
 })
 
 
+const getAllMaterials = asyncHandler( async (req, res) => {
+    const classId = req.query.classId
+    const userId = req.user._id
+
+    const classMember = await ClassMember.findOne({
+        member: userId,
+        class: classId,
+        status: "accepted"
+    })
+
+    if (!classMember) {
+        throw new ApiError(400, "You are not member of this class")
+    }
+
+    const materials = await Material.find({
+        class: classId
+    })
+
+    return res.status(200).json(
+        new ApiResponse(200, {materials: materials}, "Materials Fetched Successfully")
+    )
+})
+
 
 export {
     uploadMaterial,
-    deleteMaterial
+    deleteMaterial,
+    getAllMaterials
 }

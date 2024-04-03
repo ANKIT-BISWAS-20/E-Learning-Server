@@ -24,7 +24,10 @@ const materialSchema = new Schema(
             ref: "Class",
             required: true
         },
-
+        type: {
+            type: String, 
+            required: true,
+        }
     }, 
     {
         timestamps: true

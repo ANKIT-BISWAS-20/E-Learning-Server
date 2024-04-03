@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { uploadMaterial,
-    deleteMaterial } from "../controllers/material.controller.js";
+    deleteMaterial,
+    getAllMaterials
+ } from "../controllers/material.controller.js";
 import { upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { isMentor } from "../middlewares/isMentor.middleware.js";
@@ -28,7 +30,14 @@ router.route("/delete-material").delete(
     deleteMaterial
 )
 
+//common routes
+router.route("/get-all-materials").get(
+    verifyJWT,
+    getAllMaterials
+)
+
 // Student Routes
+
 
 
 
