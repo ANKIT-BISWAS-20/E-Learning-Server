@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { uploadMaterial } from "../controllers/material.controller.js";
+import { uploadMaterial,
+    deleteMaterial } from "../controllers/material.controller.js";
 import { upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { isMentor } from "../middlewares/isMentor.middleware.js";
@@ -19,6 +20,12 @@ router.route("/upload-material").post(
         }
     ]),
     uploadMaterial
+)
+
+router.route("/delete-material").delete(
+    verifyJWT,
+    isMentor,
+    deleteMaterial
 )
 
 // Student Routes

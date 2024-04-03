@@ -72,8 +72,37 @@ const uploadMaterial = asyncHandler( async (req, res) => {
 })
 
 
+const deleteMaterial = asyncHandler( async (req, res) => {
+    const classId = req.query.classId
+    const materialId = req.query.materialId
+    const userId = req.user._id
+
+    const material = await Material.findById(materialId)
+    if (!material) {
+        throw new ApiError(400, "Material not found")
+    }
+
+    const classMember = await ClassMember.findOne({
+        member: userId,
+        class: classId,
+        role: "mentor",
+        status: "accepted"
+    })
+
+    if (!classMember) {
+        throw new ApiError(400, "You are not mentor of this class")
+    }
+
+    await Material.findByIdAndDelete(materialId)
+
+    return res.status(200).json(
+        new ApiResponse(200, {}, "Material Deleted Successfully")
+    )
+})
+
 
 
 export {
     uploadMaterial,
+    deleteMaterial
 }
