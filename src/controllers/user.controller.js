@@ -258,7 +258,7 @@ const updateAccountDetails = asyncHandler(async(req, res) => {
                 language, 
                 institution, 
                 standard,
-                role
+                role: req.user.role
             }
         },
         {

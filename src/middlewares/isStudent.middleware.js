@@ -24,7 +24,6 @@ export const isStudent = asyncHandler(async(req, res, next) => {
             
             throw new ApiError(401, "Not A student")
         }
-    
         req.user = user;
         next()
     } catch (error) {
