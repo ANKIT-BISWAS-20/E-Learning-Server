@@ -246,10 +246,11 @@ const rejectJoinInvitation = asyncHandler( async (req, res) => {
 
 const getMyClassesForMentor = asyncHandler( async (req, res) => {
     const current_user = await User.findById(req.user?._id)
-    const myClasses = await Class.aggregate([
+    const myClasses = await ClassMember.aggregate([
         {
             '$match': {
-                'member': current_user._id
+                'member': current_user._id,
+                'role': 'mentor'
             }
         }, {
             '$lookup': {
@@ -271,7 +272,6 @@ const getMyClassesForMentor = asyncHandler( async (req, res) => {
             ]
         }
     ])
-
     return res.status(200).json(
         new ApiResponse(200, myClasses, "My Classes fetched successfully")
     )
