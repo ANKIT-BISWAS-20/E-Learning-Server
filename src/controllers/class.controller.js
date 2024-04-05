@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/ApiError.js"
 import { User} from "../models/user.model.js"
 import { Class} from "../models/class.model.js"
+import { Chat } from "../models/chat.model.js";
 import { ClassMember } from "../models/classMember.model.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
@@ -285,6 +286,36 @@ const getMyClassesForMentor = asyncHandler( async (req, res) => {
 
     return res.status(200).json(
         new ApiResponse(200, myClasses, "My Classes fetched successfully")
+    )
+})
+
+const getStudentsHavingDoubts = asyncHandler( async (req, res) => {
+    const current_user = await User.findById(req.user?._id)
+    const students = await Chat.aggregate([
+        {
+            "$match": {
+                "receiver": current_user._id
+            }
+        },
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "sender",
+                "foreignField": "_id",
+                "as": "senderInfo"
+            }
+        },
+        {
+            "$project": {
+                "senderInfo.password": 0,
+                "senderInfo.refreshToken": 0
+            }
+        }
+    ]
+    )
+
+    return res.status(200).json(
+        new ApiResponse(200, students, "Students having doubts fetched successfully")
     )
 })
 
@@ -822,4 +853,5 @@ export {
     getMyClassDashboardStudent,
     getMyClassDashboardMentor,
     viewAllJoinInvitation,
+    getStudentsHavingDoubts
 }

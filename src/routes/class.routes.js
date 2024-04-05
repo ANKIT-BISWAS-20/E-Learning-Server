@@ -13,7 +13,8 @@ import { createClass ,
         removeStudentFromClass,
         getMyClassDashboardStudent,
         getMyClassDashboardMentor,
-        viewAllJoinInvitation
+        viewAllJoinInvitation,
+        getStudentsHavingDoubts
 } from "../controllers/class.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -90,6 +91,12 @@ router.route("/get-my-class-dashboard-mentor").get(
     verifyJWT,
     isMentor,
     getMyClassDashboardMentor
+)
+
+router.route("/get-students-having-doubts").get(
+    verifyJWT,
+    isMentor,
+    getStudentsHavingDoubts
 )
 
 // Student Routes
