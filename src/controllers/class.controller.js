@@ -306,6 +306,15 @@ const getStudentsHavingDoubts = asyncHandler( async (req, res) => {
             }
         },
         {
+            "$unwind": "$senderInfo"
+        },
+        {
+            "$group": {
+                "_id": "$senderInfo._id",
+                "senderInfo": { "$first": "$senderInfo" }
+            }
+        },
+        {
             "$project": {
                 "senderInfo.password": 0,
                 "senderInfo.refreshToken": 0
