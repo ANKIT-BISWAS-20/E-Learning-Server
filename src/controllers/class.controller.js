@@ -153,42 +153,30 @@ const viewAllJoinInvitation = asyncHandler( async (req, res) => {
     }
     const classMembers = await ClassMember.aggregate([
         {
-            $match: {
-                class: classId,
-                status: "pending"
+            "$match": {
+                "class": myClass._id,
+                "status": "accepted"
             }
         },
         {
-            $lookup: {
-                from: "users",
-                localField: "member",
-                foreignField: "_id",
-                as: "member",
-                pipeline: [
-                    {
-                        $project: {
-                            _id: 1,
-                            name: 1,
-                            email: 1,
-                            avatar: 1,
-                            role: 1
-                        }
-                    }
-                ]
+            "$lookup": {
+                "from": "users",
+                "localField": "member",
+                "foreignField": "_id",
+                "as": "memberInfo"
             }
         },
         {
-            $project: {
-                _id: 1,
-                class: 1,
-                member: {
-                    $first: "$member"
-                },
-                role: 1,
-                status: 1
+            "$unwind": "$memberInfo"
+        },
+        {
+            "$project": {
+                "memberInfo.password": 0,
+                "memberInfo.refreshToken": 0
             }
         }
-    ])
+    ]
+    )
 
     return res.status(200).json(
         new ApiResponse(200, classMembers, "Join Invitations fetched successfully")
@@ -373,78 +361,40 @@ const getMyClassDashboardMentor = asyncHandler( async (req, res) => {
     }
     const classInfo = await Class.aggregate([
         {
-            $match: {
-                _id: mongoose.Types.ObjectId(classId)
+            "$match": {
+                        "_id": myClass._id
             }
         },
         {
-            $lookup: {
-                from: "classmembers",
-                localField: "_id",
-                foreignField: "class",
-                as: "members",
-                pipeline: [
-                    {
-                        $match: {
-                            status: "accepted"
-                        }
-                    },
-                    { 
-                        $lookup: {
-                            from: "users",
-                            localField: "member",
-                            foreignField: "_id",
-                            as: "member",
-                            pipeline: [
-                                {
-                                    $project: {
-                                        _id: 1,
-                                        name: 1,
-                                        email: 1,
-                                        avatar: 1,
-                                        role: 1
-                                    }
-                                }
-                            ]
-                        }
-                    }
-
-                    
-                ]
-            },
-            $project: {
-                classname: 1,
-                title: 1,
-                description: 1,
-                category: 1,
-                thumbnail: 1,
-                owner: {
-                    pipeline: [
-                        {
-                            $lookup: {
-                                from: "users",
-                                localField: "owner",
-                                foreignField: "_id",
-                                as: "owner",
-                                pipeline: [
-                                    {
-                                        $project: {
-                                            _id: 1,
-                                            name: 1,
-                                            email: 1,
-                                            avatar: 1,
-                                            role: 1
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                },
-                members: 1,
+            "$lookup": {
+                "from": "classmembers",
+                "localField": "_id",
+                "foreignField": "class",
+                "as": "members"
+            }
+        },
+        {
+            "$unwind": "$members"
+        },
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "members.member",
+                "foreignField": "_id",
+                "as": "memberInfo"
+            }
+        },
+        {
+            "$unwind": "$memberInfo"
+        },
+        {
+            "$project": {
+                "memberInfo.password": 0,
+                "memberInfo.refreshToken": 0
             }
         }
-    ])
+    ]
+    )
     return res.status(200).json(
         new ApiResponse(200, classInfo, "Class Info fetched successfully")
     )
@@ -768,75 +718,36 @@ const getMyClassDashboardStudent = asyncHandler( async (req, res) => {
     }
     const classInfo = await Class.aggregate([
         {
-            $match: {
-                _id: mongoose.Types.ObjectId(classId)
+            "$match": {
+                        "_id": myClass._id
             }
         },
         {
-            $lookup: {
-                from: "classmembers",
-                localField: "_id",
-                foreignField: "class",
-                as: "members",
-                pipeline: [
-                    {
-                        $match: {
-                            status: "accepted"
-                        }
-                    },
-                    { 
-                        $lookup: {
-                            from: "users",
-                            localField: "member",
-                            foreignField: "_id",
-                            as: "member",
-                            pipeline: [
-                                {
-                                    $project: {
-                                        _id: 1,
-                                        name: 1,
-                                        email: 1,
-                                        avatar: 1,
-                                        role: 1
-                                    }
-                                }
-                            ]
-                        }
-                    }
-
-                    
-                ]
-            },
-            $project: {
-                classname: 1,
-                title: 1,
-                description: 1,
-                category: 1,
-                thumbnail: 1,
-                owner: {
-                    pipeline: [
-                        {
-                            $lookup: {
-                                from: "users",
-                                localField: "owner",
-                                foreignField: "_id",
-                                as: "owner",
-                                pipeline: [
-                                    {
-                                        $project: {
-                                            _id: 1,
-                                            name: 1,
-                                            email: 1,
-                                            avatar: 1,
-                                            role: 1
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    ]
-                },
-                members: 1,
+            "$lookup": {
+                "from": "classmembers",
+                "localField": "_id",
+                "foreignField": "class",
+                "as": "members"
+            }
+        },
+        {
+            "$unwind": "$members"
+        },
+        {
+            "$lookup": {
+                "from": "users",
+                "localField": "members.member",
+                "foreignField": "_id",
+                "as": "memberInfo"
+            }
+        },
+        {
+            "$unwind": "$memberInfo"
+        },
+        {
+            "$project": {
+                "memberInfo.password": 0,
+                "memberInfo.refreshToken": 0
             }
         }
     ])
