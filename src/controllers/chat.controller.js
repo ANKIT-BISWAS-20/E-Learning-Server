@@ -18,7 +18,6 @@ const getChatsWithMentor = asyncHandler( async (req, res) => {
 
     const mentorId = req.query.mentorId
     const studentId = req.user._id
-
     if(!mentorId) {
         throw new ApiError(400, "Mentor is required")
     }
@@ -30,63 +29,67 @@ const getChatsWithMentor = asyncHandler( async (req, res) => {
     }
 
     const chats = await Chat.aggregate([
-        [
-            {
-                $match: {
-                    $or: [
-                        { studentId: mongoose.Types.ObjectId(studentId), mentorId: mongoose.Types.ObjectId(mentorId) },
-                        { studentId: mongoose.Types.ObjectId(mentorId), mentorId: mongoose.Types.ObjectId(studentId) }
-                    ]
-                }
-            },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "mentorId",
-                    foreignField: "_id",
-                    as: "mentorInfo"
-                }
-            },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "studentId",
-                    foreignField: "_id",
-                    as: "studentInfo"
-                }
-            },
-            {
-                $unwind: "$mentorInfo"
-            },
-            {
-                $unwind: "$studentInfo"
-            },
-            {
-                $project: {
-                    mentorInfo: {
-                        _id: 1,
-                        fulname: 1,
-                        email: 1,
-                        avatar: 1
-                    },
-                    studentInfo: {
-                        _id: 1,
-                        fulname: 1,
-                        email: 1
-                    },
-                    createdAt: 1
-                }
-            },
-            {
-                $sort: {
-                    createdAt: -1
-                }
-            }
-        ]
-    ])
-
-    
-
+        {
+          "$match": {
+            "sender": studentId,
+            "receiver": mentor._id
+          }
+        },
+        {
+          "$lookup": {
+            "from": "users",
+            "localField": "receiver",
+            "foreignField": "_id",
+            "as": "receiverInfo"
+          }
+        },
+        {
+          "$lookup": {
+            "from": "users",
+            "localField": "sender",
+            "foreignField": "_id",
+            "as": "senderInfo"
+          }
+        },
+        {
+          "$unwind": "$receiverInfo"
+        },
+        {
+          "$unwind": "$senderInfo"
+        },
+        {
+          "$sort": {
+            "createdAt": 1
+          }
+        },
+        {
+          "$project": {
+            "message": 1,
+            "isSeen": 1,
+            "createdAt": 1,
+            "updatedAt": 1,
+            "__v": 1,
+            "_id": 1,
+            "receiverInfo._id": 1,
+            "receiverInfo.username": 1,
+            "receiverInfo.email": 1,
+            "receiverInfo.fullName": 1,
+            "receiverInfo.avatar": 1,
+            "receiverInfo.createdAt": 1,
+            "receiverInfo.updatedAt": 1,
+            "senderInfo._id": 1,
+            "senderInfo.username": 1,
+            "senderInfo.email": 1,
+            "senderInfo.fullName": 1,
+            "senderInfo.avatar": 1,
+            "senderInfo.createdAt": 1,
+            "senderInfo.updatedAt": 1
+          }
+        }
+      ]
+      
+      
+)
     return res.status(200).json(new ApiResponse(201, chats,"Chat fetched successfully"))
 
 } )
@@ -192,8 +195,8 @@ const chatWithMentor = asyncHandler( async (req, res) => {
         }
     
         const chat = new Chat({
-            mentorId: mentorId,
-            studentId: studentId,
+            sender: studentId,
+            receiver: mentorId,
             message: message
         })
     

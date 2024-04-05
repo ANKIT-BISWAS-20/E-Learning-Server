@@ -476,7 +476,6 @@ const getMyClassDashboardMentor = asyncHandler( async (req, res) => {
 const joinClass = asyncHandler( async (req, res) => {
         
         const classId = req.body.id
-        console.log(classId)
         const current_user = await User.findById(req.user?._id)
     
         const myClass = await Class.findById(classId)
@@ -494,7 +493,7 @@ const joinClass = asyncHandler( async (req, res) => {
             throw new ApiError(400, "You are already a member of this class")
         }
         if (classMember?.status === "pending") {
-            throw new ApiError(400, "You have already requested to join this class")
+            throw new ApiError(409, "You have already requested to join this class")
         }
     
         await ClassMember.create({
