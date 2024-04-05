@@ -153,7 +153,7 @@ const viewAllJoinInvitation = asyncHandler( async (req, res) => {
     const classMembers = await ClassMember.aggregate([
         {
             $match: {
-                class: mongoose.Types.ObjectId(classId),
+                class: classId,
                 status: "pending"
             }
         },
@@ -259,86 +259,27 @@ const getMyClassesForMentor = asyncHandler( async (req, res) => {
     const current_user = await User.findById(req.user?._id)
     const myClasses = await Class.aggregate([
         {
-            $match: {
-                member: mongoose.Types.ObjectId(current_user._id)
+            '$match': {
+                'member': current_user._id
             }
-        },
-        {
-            $lookup: {
-                from: "classes",
-                localField: "class",
-                foreignField: "_id",
-                as: "class",
-                pipeline: [
-                    {
-                        $lookup: {
-                            from: "classmembers",
-                            localField: "_id",
-                            foreignField: "class",
-                            as: "members",
-                            pipeline: [
-                                {
-                                    $match: {
-                                        status: "accepted"
-                                    }
-                                },
-                                {
-                                    $size: {
-                                        $filter: {
-                                            input: "$members",
-                                            as: "member",
-                                            cond: [
-                                                { $eq: ["$$member.role", "student"] }
-                                            ]
-                                        }
-                                    }
-                                }
-                            ]
-                        },
-                        $project: {
-                            classname: 1,
-                            title: 1,
-                            description: 1,
-                            category: 1,
-                            thumbnail: 1,
-                            owner: {
-                                pipeline: [
-                                    {
-                                        $lookup: {
-                                            from: "users",
-                                            localField: "owner",
-                                            foreignField: "_id",
-                                            as: "owner",
-                                            pipeline: [
-                                                {
-                                                    $project: {
-                                                        _id: 1,
-                                                        name: 1,
-                                                        email: 1,
-                                                    }
-                                                }
-                                            ]
-                                        }
-                                    }
-                                ]
-                            },
-                            members: 1,
-                        }
-                    }
-                ]
+        }, {
+            '$lookup': {
+                'from': 'classes',
+                'localField': 'class',
+                'foreignField': '_id',
+                'as': 'classInfo'
             }
-        },
-        {
-            $project: {
-                class: {
-                    $first: "$class"
-                },
-                role: 1,
-                owner: {
-                    $first: "$owner"
-                },
-                members: 1,
+        }, {
+            '$lookup': {
+                'from': 'users',
+                'localField': 'classInfo.owner',
+                'foreignField': '_id',
+                'as': 'ownerInfo'
             }
+        }, {
+            '$unset': [
+                'ownerInfo.password', 'ownerInfo.refreshToken'
+            ]
         }
     ])
 
