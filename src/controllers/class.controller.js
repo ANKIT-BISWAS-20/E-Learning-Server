@@ -21,10 +21,10 @@ const createClass = asyncHandler( async (req, res) => {
 
     const current_user = await User.findById(req.user?._id)
     const {classname,title,description,category} = req.body
-    console.log(classname)
-    console.log(title)
-    console.log(description)
-    console.log(category)
+    // console.log(classname)
+    // console.log(title)
+    // console.log(description)
+    // console.log(category)
     if (
         [classname, title, description, category].some((field) => field?.trim() === "")
     ) {
