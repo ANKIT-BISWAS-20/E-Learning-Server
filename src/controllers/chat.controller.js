@@ -31,8 +31,12 @@ const getChatsWithMentor = asyncHandler( async (req, res) => {
     const chats = await Chat.aggregate([
         {
           "$match": {
-            "sender": studentId,
-            "receiver": mentor._id
+            "$or": [
+            {"sender": studentId,
+            "receiver": mentor._id} ,
+            {"sender": mentor._id,
+            "receiver": studentId}
+            ]
           }
         },
         {
@@ -98,7 +102,7 @@ const getChatsWithMentor = asyncHandler( async (req, res) => {
 const getChatsWithStudent = asyncHandler( async (req, res) => {
 
     const mentorId = req.user._id
-    const studentId = req.query.mentorId
+    const studentId = req.query.studentId
 
     if(!studentId) {
         throw new ApiError(400, "Student is required")
@@ -111,66 +115,69 @@ const getChatsWithStudent = asyncHandler( async (req, res) => {
     }
 
     const chats = await Chat.aggregate([
-        {
-          "$match": {
-            "sender": mentorId,
-            "receiver": student._id
-          }
-        },
-        {
-          "$lookup": {
-            "from": "users",
-            "localField": "receiver",
-            "foreignField": "_id",
-            "as": "receiverInfo"
-          }
-        },
-        {
-          "$lookup": {
-            "from": "users",
-            "localField": "sender",
-            "foreignField": "_id",
-            "as": "senderInfo"
-          }
-        },
-        {
-          "$unwind": "$receiverInfo"
-        },
-        {
-          "$unwind": "$senderInfo"
-        },
-        {
-          "$sort": {
-            "createdAt": 1
-          }
-        },
-        {
-          "$project": {
-            "message": 1,
-            "isSeen": 1,
-            "createdAt": 1,
-            "updatedAt": 1,
-            "__v": 1,
-            "_id": 1,
-            "receiverInfo._id": 1,
-            "receiverInfo.username": 1,
-            "receiverInfo.email": 1,
-            "receiverInfo.fullName": 1,
-            "receiverInfo.avatar": 1,
-            "receiverInfo.createdAt": 1,
-            "receiverInfo.updatedAt": 1,
-            "senderInfo._id": 1,
-            "senderInfo.username": 1,
-            "senderInfo.email": 1,
-            "senderInfo.fullName": 1,
-            "senderInfo.avatar": 1,
-            "senderInfo.createdAt": 1,
-            "senderInfo.updatedAt": 1
-          }
+      {
+        "$match": {
+          "$or": [
+            { "sender": mentorId, "receiver": student._id },
+            { "sender": student._id, "receiver": mentorId }
+          ]
         }
-      ])
+      },
+      {
+        "$lookup": {
+          "from": "users",
+          "localField": "receiver",
+          "foreignField": "_id",
+          "as": "receiverInfo"
+        }
+      },
+      {
+        "$lookup": {
+          "from": "users",
+          "localField": "sender",
+          "foreignField": "_id",
+          "as": "senderInfo"
+        }
+      },
+      {
+        "$unwind": "$receiverInfo"
+      },
+      {
+        "$unwind": "$senderInfo"
+      },
+      {
+        "$sort": {
+          "createdAt": 1
+        }
+      },
+      {
+        "$project": {
+          "message": 1,
+          "isSeen": 1,
+          "createdAt": 1,
+          "updatedAt": 1,
+          "__v": 1,
+          "_id": 1,
+          "receiverInfo._id": 1,
+          "receiverInfo.username": 1,
+          "receiverInfo.email": 1,
+          "receiverInfo.fullName": 1,
+          "receiverInfo.avatar": 1,
+          "receiverInfo.createdAt": 1,
+          "receiverInfo.updatedAt": 1,
+          "senderInfo._id": 1,
+          "senderInfo.username": 1,
+          "senderInfo.email": 1,
+          "senderInfo.fullName": 1,
+          "senderInfo.avatar": 1,
+          "senderInfo.createdAt": 1,
+          "senderInfo.updatedAt": 1
+        }
+      }
+    ]
+    )
 
-    
+      console.log(chats)
 
     return res.status(200).json(new ApiResponse(201, chats,"Chats fetched successfully"))
 
