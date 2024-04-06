@@ -346,21 +346,17 @@ const removeStudentFromClass = asyncHandler( async (req, res) => {
 
 
 const getMyClassDashboardMentor = asyncHandler( async (req, res) => {
-    const current_user = await User.findById(req.user?._id)
+    const current_user = await User.findById(req.user?._id).select("-password -refreshToken")
     const classId = req.query.id
     const myClass = await Class.findById(classId)
     if (!myClass) {
         throw new ApiError(404, "Class not found")
     }
-    const classMember = await ClassMember.findOne({
-        class: classId,
-        member: current_user._id,
-        role: "mentor",
-        status: "accepted"
-    })
-    if (!classMember) {
+    
+    if (myClass.owner.toString() !== current_user._id.toString()) {
         throw new ApiError(401, "unauthorized")
     }
+
     const classInfo = await Class.aggregate([
         {
             "$match": {
@@ -398,7 +394,7 @@ const getMyClassDashboardMentor = asyncHandler( async (req, res) => {
     ]
     )
     return res.status(200).json(
-        new ApiResponse(200, classInfo, "Class Info fetched successfully")
+        new ApiResponse(200, {class: myClass, members:classInfo, owner: current_user}, "Class Info fetched successfully")
     )
 })
 
