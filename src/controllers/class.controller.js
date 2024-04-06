@@ -446,7 +446,7 @@ const joinClass = asyncHandler( async (req, res) => {
 
 const leaveClass = asyncHandler( async (req, res) => {
             //TODO: Delete all assignments
-            const classId = req.params.id
+            const classId = req.query.id
             const current_user = await User.findById(req.user?._id)
         
             const myClass = await Class.findById(classId)

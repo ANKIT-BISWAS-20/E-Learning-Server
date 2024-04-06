@@ -35,7 +35,12 @@ router.route("/mark-submission").put(
 router.route("/submit-assignment").post(
     verifyJWT,
     isStudent,
-    upload.single("file"),
+    upload.fields([
+        {
+            name: "document",
+            maxCount: 1
+        }
+    ]),
     submitAssignment
 )
 

@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv"
 import { ClassMember } from "../models/classMember.model.js";
 import { Submission } from "../models/submissions.model.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 dotenv.config({
     path: './.env'
@@ -19,24 +20,23 @@ dotenv.config({
 const submitAssignment = asyncHandler( async (req, res) => {
     const assignmentId = req.query.assignmentId
     const userId = req.user._id
-
+    const current_user = await User.findById(userId)
     const submission = await Submission.findOne(
         {assignment: assignmentId, owner: userId}
         )
     if (submission) {
-        throw new ApiError(400, "You have already submitted this assignment")
+        throw new ApiError(409, "You have already submitted this assignment")
     }
 
     const { description} = req.body
     if (
-        [userId,assignmentId, description].some((field) => field?.trim() === "")
+        [userId,assignmentId, description].some((field) => field === "")
     ) {
         throw new ApiError(400, "All fields are required")
     }
 
 
     const documentLocalPath = req.files?.document[0]?.path;
-
     if (!documentLocalPath) {
         throw new ApiError(400, " file is required")
     }
@@ -47,7 +47,7 @@ const submitAssignment = asyncHandler( async (req, res) => {
     }
    
 
-    const mySubmission = await Assignment.create({
+    const mySubmission = await Submission.create({
         assignment: assignmentId,
         document: doc.url,
         description:description,
