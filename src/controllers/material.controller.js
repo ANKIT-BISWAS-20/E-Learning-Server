@@ -102,22 +102,35 @@ const getAllMaterials = asyncHandler( async (req, res) => {
     const classId = req.query.classId
     const userId = req.user._id
 
-    const classMember = await ClassMember.findOne({
-        member: userId,
-        class: classId,
-        status: "accepted"
-    })
-
-    if (!classMember) {
-        throw new ApiError(400, "You are not member of this class")
+    const current_class= await Class.findById(classId)
+    const current_user = await User.findById(userId)
+    if (current_class.owner.toString() !== current_user._id.toString()) {
+        const classMember = await ClassMember.findOne({
+            member: userId,
+            class: classId,
+            status: "accepted"
+        })
+    
+        if (!classMember) {
+            throw new ApiError(400, "You are not member of this class")
+        }
     }
 
-    const materials = await Material.find({
-        class: classId
-    })
+    const materials = await Material.aggregate([
+        {
+            "$match": {
+                "class": current_class._id
+            }
+        },
+        {
+            "$sort": {
+               "createdAt": 1
+            }
+        }
+    ])
 
     return res.status(200).json(
-        new ApiResponse(200, {materials: materials}, "Materials Fetched Successfully")
+        new ApiResponse(200, materials, "Materials Fetched Successfully")
     )
 })
 

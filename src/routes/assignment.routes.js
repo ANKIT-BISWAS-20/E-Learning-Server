@@ -12,6 +12,12 @@ const router = Router()
 router.route("/create-assignment").post(
     verifyJWT,
     isMentor,
+    upload.fields([
+        {
+            name: "document",
+            maxCount: 1
+        }
+    ]),
     createAssignment
 )
 
