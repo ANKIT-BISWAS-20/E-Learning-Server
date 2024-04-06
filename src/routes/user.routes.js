@@ -1,5 +1,14 @@
 import { Router } from "express";
-import { registerUser , loginUser, logoutUser, refreshAccessToken,updateUserAvatar,updateAccountDetails,getCurrentStudent,getCurrentMentor} from "../controllers/user.controller.js";
+import { registerUser ,
+     loginUser,
+      logoutUser,
+       refreshAccessToken,
+       updateUserAvatar,
+       updateAccountDetails,
+       getCurrentStudent,
+       getCurrentMentor,
+       getTodo
+    } from "../controllers/user.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { isMentor } from "../middlewares/isMentor.middleware.js";
@@ -25,6 +34,8 @@ router.route("/logout").post(verifyJWT,  logoutUser)
 router.route("/refresh-token").post(refreshAccessToken)
 router.route("/update-account").patch(verifyJWT, updateAccountDetails)
 router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvatar)
+router.route("/get-todo").get(verifyJWT, getTodo)
+
 
 //student features
 router.route("/get-current-student").get(verifyJWT, isStudent, getCurrentStudent)

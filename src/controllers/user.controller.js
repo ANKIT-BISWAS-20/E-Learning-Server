@@ -3,6 +3,8 @@ import {ApiError} from "../utils/ApiError.js"
 import { User} from "../models/user.model.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
+import { ClassMember } from "../models/classMember.model.js";
+import { Assignment } from "../models/assignment.model.js";
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose";
 import dotenv from "dotenv"
@@ -323,6 +325,68 @@ const getCurrentMentor = asyncHandler(async(req, res) => {
 })
 
 
+// common 
+const getTodo = asyncHandler(async(req, res) => {
+    const Id = req.user._id
+    const current_user = await User.findById(Id)
+    if (!current_user) {
+        throw new ApiError(404, "User not found")
+    }
+    const assignments = await ClassMember.aggregate([
+        {
+          "$match": {
+            "member": current_user._id
+          }
+        },
+        {
+          "$lookup": {
+            "from": "classes",
+            "localField": "class",
+            "foreignField": "_id",
+            "as": "classInfo"
+          }
+        },
+        {
+          "$lookup": {
+            "from": "assignments",
+            "localField": "classInfo._id",
+            "foreignField": "class",
+            "as": "assignments"
+          }
+        },
+        {
+          "$unwind": "$assignments"
+        },
+        {
+          "$lookup": {
+            "from": "classes",
+            "localField": "assignments.class",
+            "foreignField": "_id",
+            "as": "assignments.classInfo"
+          }
+        },
+        {
+          "$group": {
+            "_id": "$member",
+            "allAssignments": {
+              "$push": "$assignments"
+            }
+          }
+        }
+      ]
+      )
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,assignments,"Todos fetched successfully"
+        )
+    )
+})
+
+
+
 
 export {
     registerUser,
@@ -332,5 +396,6 @@ export {
     updateUserAvatar,
     updateAccountDetails,
     getCurrentStudent,
-    getCurrentMentor
+    getCurrentMentor,
+    getTodo
 }
