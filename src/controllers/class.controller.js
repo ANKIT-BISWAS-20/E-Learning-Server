@@ -753,8 +753,12 @@ const getMyClassDashboardStudent = asyncHandler( async (req, res) => {
             }
         }
     ])
+
+    const owner = await User.findById(myClass.owner).select("-password -refreshToken")
+
+
     return res.status(200).json(
-        new ApiResponse(200, classInfo, "Class Info fetched successfully")
+        new ApiResponse(200, {class:myClass ,members: classInfo, owner: owner}, "Class Info fetched successfully")
     )
 
 })
