@@ -36,7 +36,7 @@ const createAssignment = asyncHandler( async (req, res) => {
     }
 
 
-    const documentLocalPath = req.files?.document[0]?.path;
+    const documentLocalPath = req.files?.file[0]?.path;
 
     if (!documentLocalPath) {
         throw new ApiError(400, " file is required")

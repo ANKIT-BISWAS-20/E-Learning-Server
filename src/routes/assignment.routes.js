@@ -14,7 +14,7 @@ router.route("/create-assignment").post(
     isMentor,
     upload.fields([
         {
-            name: "document",
+            name: "file",
             maxCount: 1
         }
     ]),
