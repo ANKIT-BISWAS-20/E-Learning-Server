@@ -7,22 +7,14 @@ const commentSchema = new Schema(
             ref: "User",
             required: true
         },
-        type: {
-            type: String,
-            required: true
-        },
         message: {
             type: String, 
             required: true,
         },
-        assignemnt: {
-            type: Schema.Types.ObjectId,
-            ref: "Assignment",
-
-        },
         material: {
             type: Schema.Types.ObjectId,
             ref: "Material",
+            required: true
 
         }
     }, 

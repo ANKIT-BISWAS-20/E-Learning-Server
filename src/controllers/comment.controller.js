@@ -1,6 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {ApiError} from "../utils/ApiError.js"
 import { User} from "../models/user.model.js"
+import { Material } from "../models/material.model.js";
 import { Comment } from "../models/comment.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken"
@@ -15,85 +16,59 @@ dotenv.config({
 
 
 const getAllComments = asyncHandler( async (req, res) => {
-    const assignemntId = req.query.assignmentId;
     const materialId = req.query.materialId;
-    if (!(assignemntId||materialId)) {
-        throw new ApiError(400, "Assignment or Material id is required")
-    }
-    const type = assignemntId ? "assignment" : "material"
-    let comments;
-    if (type === "assignment") {
-        comments = await Comment.aggregate([
-            {
-                $match: {
-                    assignemnt: mongoose.Types.ObjectId(assignemntId)
-                }
-            },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "sender",
-                    foreignField: "_id",
-                    as: "sender"
-                }
-            },
-            {
-                $unwind: "$sender"
-            },
-            {
-                $project: {
-                    "sender.password": 0
-                }
-            }
-        ])
-    } else {
-        comments = await Comment.aggregate([
-            {
-                $match: {
-                    material: mongoose.Types.ObjectId(materialId)
-                }
-            },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "sender",
-                    foreignField: "_id",
-                    as: "sender"
-                }
-            },
-            {
-                $unwind: "$sender"
-            },
-            {
-                $project: {
-                    "sender.password": 0
-                }
-            }
-        ])
+    if (!materialId) {
+        throw new ApiError(400, " Material id is required")
     }
 
-    if (!comments) {
-        throw new ApiError(404, "No comments found")
-    }
+    const material = await Material.findById(materialId)
+    
+        const comments = await Comment.aggregate([
+            {
+                "$match": {
+                    "material": material._id
+                }
+            },
+            {
+                "$lookup": {
+                    "from": "users",
+                    "localField": "sender",
+                    "foreignField": "_id",
+                    "as": "sender"
+                }
+            },
+            {
+                "$unwind": "$sender"
+            },
+            {
+                "$project": {
+                    "sender.password": 0
+                }
+            },{
+                "$sort": {
+                    "createdAt": 1
+                }
+            }
+        ])
     res.status(200).json(new ApiResponse(200, comments, "Comments Fetched Successfully"))
 })
 
 
 const createComment = asyncHandler( async (req, res) => {
     const {message} = req.body
-    const assignemntId = req.query.assignmentId;
     const materialId = req.query.materialId;
-    if (!(assignemntId||materialId)) {
-        throw new ApiError(400, "Assignment or Material id is required")
+    if (!materialId) {
+        throw new ApiError(400, "Material id is required")
     }
-    const type = assignemntId ? "assignment" : "material"
+    const material = await Material.findById(materialId)
+    if (!material) {
+        throw new ApiError(404, "Material not found")
+    }
     const sender = req.user._id
     const comment = new Comment({
         sender,
-        type,
         message,
-        assignemnt: assignemntId,
-        material: materialId
+        material: material._id
     })
     await comment.save()
     res.status(201).json(new ApiResponse(201, comment, "Comment Added Successfully"))
