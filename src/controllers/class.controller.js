@@ -4,6 +4,8 @@ import { User} from "../models/user.model.js"
 import { Class} from "../models/class.model.js"
 import { Chat } from "../models/chat.model.js";
 import { ClassMember } from "../models/classMember.model.js"
+import { Material } from "../models/material.model.js"
+import { Assignment } from "../models/assignment.model.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import jwt from "jsonwebtoken"
@@ -147,8 +149,8 @@ const updateThumbnail = asyncHandler( async (req, res) => {
 //TODO: Delete Class
 
 const viewAllJoinInvitation = asyncHandler( async (req, res) => {
-    const classId = req.classId
-    console.log(classId)
+    const classId = req.query.id
+    // console.log(classId)
     const myClass = await Class.findById(classId)
     if (!myClass) {
         throw new ApiError(404, "Class not found")
@@ -157,7 +159,7 @@ const viewAllJoinInvitation = asyncHandler( async (req, res) => {
         {
             "$match": {
                 "class": myClass._id,
-                "status": "accepted"
+                "status": "pending"
             }
         },
         {
@@ -219,7 +221,7 @@ const acceptJoinInvitation = asyncHandler( async (req, res) => {
 
 const rejectJoinInvitation = asyncHandler( async (req, res) => {
                 
-                const classId = req.params.id
+                const classId = req.query.id
                 const memberId = req.body.memberId
             
                 const myClass = await Class.findById(classId)
@@ -386,6 +388,11 @@ const getMyClassDashboardMentor = asyncHandler( async (req, res) => {
             "$unwind": "$memberInfo"
         },
         {
+            "$match": {
+                "members.status": "accepted"
+            }
+        },
+        {
             "$project": {
                 "memberInfo.password": 0,
                 "memberInfo.refreshToken": 0
@@ -395,6 +402,26 @@ const getMyClassDashboardMentor = asyncHandler( async (req, res) => {
     )
     return res.status(200).json(
         new ApiResponse(200, {class: myClass, members:classInfo, owner: current_user}, "Class Info fetched successfully")
+    )
+})
+
+
+const deleteClass = asyncHandler( async (req, res) => {
+    const classId = req.query.id
+    const current_user = await User.findById(req.user?._id)
+    const myClass = await Class.findById(classId)
+    if (!myClass) {
+        throw new ApiError(404, "Class not found")
+    }
+    if (myClass.owner.toString() !== current_user._id.toString()) {
+        throw new ApiError(401, "Not Class Mentor")
+    }
+    await Class.findByIdAndDelete(classId)
+    await ClassMember.deleteMany({class: classId})
+    await Material.deleteMany({class: classId})
+    await Assignment.deleteMany({class: classId})
+    return res.status(200).json(
+        new ApiResponse(200, null, "Class deleted successfully")
     )
 })
 
@@ -584,7 +611,9 @@ const getMyClassesForStudent = asyncHandler(async (req, res) => {
         myClasses = await ClassMember.aggregate([
             {
                 '$match': {
-                    'member': current_user._id
+                    'member': current_user._id,
+                    'role': 'student',
+                    'status': 'accepted'
                 }
             }, {
                 '$lookup': {
@@ -717,7 +746,7 @@ const getMyClassDashboardStudent = asyncHandler( async (req, res) => {
     const classInfo = await Class.aggregate([
         {
             "$match": {
-                        "_id": myClass._id
+                "_id": myClass._id
             }
         },
         {
@@ -743,12 +772,18 @@ const getMyClassDashboardStudent = asyncHandler( async (req, res) => {
             "$unwind": "$memberInfo"
         },
         {
+            "$match": {
+                "members.status": "accepted"
+            }
+        },
+        {
             "$project": {
                 "memberInfo.password": 0,
                 "memberInfo.refreshToken": 0
             }
         }
-    ])
+    ]
+    )
 
     const owner = await User.findById(myClass.owner).select("-password -refreshToken")
 
@@ -775,5 +810,6 @@ export {
     getMyClassDashboardStudent,
     getMyClassDashboardMentor,
     viewAllJoinInvitation,
-    getStudentsHavingDoubts
+    getStudentsHavingDoubts,
+    deleteClass
 }

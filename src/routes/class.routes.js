@@ -14,7 +14,8 @@ import { createClass ,
         getMyClassDashboardStudent,
         getMyClassDashboardMentor,
         viewAllJoinInvitation,
-        getStudentsHavingDoubts
+        getStudentsHavingDoubts,
+        deleteClass
 } from "../controllers/class.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -41,6 +42,11 @@ router.route("/update").patch(
     verifyJWT,
     isClassOwner,
     updateClass
+)
+
+router.route("/delete").delete(
+    verifyJWT,
+    deleteClass
 )
 
 router.route("/update-thumbnail").patch(

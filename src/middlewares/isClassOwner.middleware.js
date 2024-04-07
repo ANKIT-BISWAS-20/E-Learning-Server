@@ -12,7 +12,7 @@ dotenv.config({
 export const isClassOwner = asyncHandler(async(req, res, next) => {
     try {
         const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "")
-        const classId = req.body.id
+        const classId = req.query.id
         if (!token) {
             throw new ApiError(401, "Unauthorized request")
         }
@@ -38,7 +38,7 @@ export const isClassOwner = asyncHandler(async(req, res, next) => {
       
 
         req.user = user;
-        req.classId = classId;
+        // req.classId = classId;
         next()
     } catch (error) {
         throw new ApiError(401, error?.message || "Invalid access token")
