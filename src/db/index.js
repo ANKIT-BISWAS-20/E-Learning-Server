@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 
-const DB_NAME = "e_learning"
+const DB_NAME = "aarohan"
 const connectDB = async () => {
     try {
         const connectionInstance = await mongoose.connect(`${process.env.MONGODB_URI}${DB_NAME}`)

@@ -36,6 +36,8 @@ const submitAssignment = asyncHandler(async (req, res) => {
         throw new ApiError(400, "All fields are required")
     }
 
+    const assignment = await Assignment.findById(assignmentId)
+
 
     const documentLocalPath = req.files?.document[0]?.path;
     if (!documentLocalPath) {
@@ -50,6 +52,7 @@ const submitAssignment = asyncHandler(async (req, res) => {
 
     const mySubmission = await Submission.create({
         assignment: assignmentId,
+        fullMarks:assignment.fullmarks,
         document: doc.url,
         description: description,
         owner: current_user._id,

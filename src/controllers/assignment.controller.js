@@ -4,6 +4,7 @@ import { User} from "../models/user.model.js"
 import {Class} from "../models/class.model.js"
 import { Assignment } from "../models/assignment.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { Submission } from "../models/submissions.model.js";
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose";
 import dotenv from "dotenv"
@@ -122,16 +123,40 @@ const getAllAssignment = asyncHandler( async (req, res) => {
 
     const assignments = await Assignment.aggregate([
         {
-            "$match": {
-                "class": current_class._id
-            }
-        },
-        {
-            "$sort": {
-                "createdAt": 1
-            }
-        }
-    ])
+              "$match": {
+                  "class": current_class._id
+              }
+          },
+          {
+              "$sort": {
+                  "createdAt": 1
+              }
+          },
+          {
+              "$lookup": {
+                  "from": "submissions",
+                  "let": { "assignmentId": "$_id" },
+                  "pipeline": [
+                      {
+                          "$match": {
+                              "$expr": { "$and": [
+                                  { "$eq": ["$assignment", "$$assignmentId"] },
+                                  { "$eq": ["$owner", current_user._id] }
+                              ]}
+                          }
+                      }
+                  ],
+                  "as": "submissions"
+              }
+          },
+          {
+              "$addFields": {
+                  "marks": {
+                      "$ifNull": [{ "$arrayElemAt": ["$submissions.marks", 0] }, null]
+                  }
+              }
+          }
+      ])
 
     return res.status(200).json(
         new ApiResponse(200,  assignments, "Assignments Fetched Successfully")

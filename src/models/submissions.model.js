@@ -20,6 +20,10 @@ const submissionSchema = new Schema(
             ref: "Assignment",
             required: true
         },
+        fullMarks: {
+            type: Number, 
+            required: true
+        },
         marks: {
             type: String, 
             default: "unmarked"
