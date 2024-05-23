@@ -4,10 +4,13 @@ import { User} from "../models/user.model.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ClassMember } from "../models/classMember.model.js";
+import { Submission } from "../models/submissions.model.js";
 import { Assignment } from "../models/assignment.model.js";
+import { LiveClass } from "../models/liveClasses.model.js";
 import jwt from "jsonwebtoken"
 import mongoose from "mongoose";
 import dotenv from "dotenv"
+import { Class } from "../models/class.model.js";
 
 dotenv.config({
     path: './.env'
@@ -386,6 +389,165 @@ const getTodo = asyncHandler(async(req, res) => {
 })
 
 
+const getAnalytics = asyncHandler(async(req, res) => {
+    const userId = req.user._id
+    const current_user = await User.findById (userId)
+    if (!current_user) {
+        throw new ApiError(404, "User not found")
+    }
+    const numberClasses = await ClassMember.countDocuments({member: userId, status: "accepted"})
+    const currentDate = new Date()
+    const totalAssignedAssignments = await ClassMember.aggregate([
+        {
+            $match: {
+                member: current_user._id,
+                status: "accepted"
+            }
+        },
+        {
+            $lookup: {
+                from: "assignments",
+                localField: "class",
+                foreignField: "class",
+                as: "assignments"
+            }
+        },
+        {
+            $unwind: "$assignments"
+        },
+        {
+            $count: "totalAssignments"
+        }
+    ]);
+    const totalSubmittedAssignments = await Submission.countDocuments({owner: userId})
+    const upcomingLiveClassesCount = await ClassMember.aggregate([
+        {
+            $match: {
+                member: current_user._id,
+                status: "accepted"
+            }
+        },
+        {
+            $lookup: {
+                from: "liveclasses",
+                localField: "class",
+                foreignField: "class",
+                as: "liveClasses"
+            }
+        },
+        {
+            $unwind: "$liveClasses"
+        },
+        {
+            $match: {
+                "liveClasses.startTime": { $gt: new Date() }
+            }
+        },
+        {
+            $count: "upcomingClassesCount" // Count the number of documents
+        }
+    ]);
+    
+
+    const assignment_details = await Submission.aggregate([{
+        $match: {
+            owner: current_user._id,
+        }
+    },
+    {
+        $project: {
+            marks: 1,
+            fullMarks: 1,
+            createdAt: 1
+        }
+    }])
+
+    let totalFullMarks = 0;
+    let totalMarks = 0;
+
+    assignment_details.forEach(submission => {
+        if (submission.marks !== 'unmarked') {
+            totalFullMarks += submission.fullMarks;
+            totalMarks += submission.marks;
+        }
+    });
+
+    const accuracy = (totalMarks / totalFullMarks) * 100;
+
+    const pendingAssignments = await ClassMember.aggregate([
+        {
+            $match: {
+                member: current_user._id,
+                status: "accepted"
+            }
+        },
+        {
+            $lookup: {
+                from: "assignments",
+                localField: "class",
+                foreignField: "class",
+                as: "assignments"
+            }
+        },
+        {
+            $unwind: "$assignments"
+        },
+        {
+            $lookup: {
+                from: "submissions",
+                let: { assignmentId: "$assignments._id", memberId: "$member" },
+                pipeline: [
+                    {
+                        $match: {
+                            $expr: {
+                                $and: [
+                                    { $eq: ["$assignment", "$$assignmentId"] },
+                                    { $eq: ["$owner", "$$memberId"] }
+                                ]
+                            }
+                        }
+                    }
+                ],
+                as: "submissions"
+            }
+        },
+        {
+            $group: {
+                _id: "$_id",
+                totalAssignments: { $sum: 1 },
+                totalSubmissions: { $sum: { $cond: [{ $eq: [{ $size: "$submissions" }, 0] }, 0, 1] } }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                pendingAssignmentCount: { $subtract: ["$totalAssignments", "$totalSubmissions"] }
+            }
+        }
+    ]);
+
+    return res. status(200).json(
+        new ApiResponse(
+            200,
+            {
+                numberClasses,
+                totalAssignedAssignments: totalAssignedAssignments[0]?.totalAssignments || 0,
+                totalSubmittedAssignments,
+                upcomingLiveClassesCount: upcomingLiveClassesCount[0]?.upcomingClassesCount || 0,
+                assignmentGraph: assignment_details,
+                pendingAssignments: pendingAssignments[0]?.pendingAssignmentCount || 0,
+                accuracy
+            },
+            "Analytics fetched successfully"
+        )
+    )
+
+
+
+    
+})
+
+
 
 
 export {
@@ -397,5 +559,6 @@ export {
     updateAccountDetails,
     getCurrentStudent,
     getCurrentMentor,
-    getTodo
+    getTodo,
+    getAnalytics
 }

@@ -7,7 +7,8 @@ import { registerUser ,
        updateAccountDetails,
        getCurrentStudent,
        getCurrentMentor,
-       getTodo
+       getTodo,
+       getAnalytics
     } from "../controllers/user.controller.js";
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -37,8 +38,10 @@ router.route("/avatar").patch(verifyJWT, upload.single("avatar"), updateUserAvat
 router.route("/get-todo").get(verifyJWT, getTodo)
 
 
+
 //student features
 router.route("/get-current-student").get(verifyJWT, isStudent, getCurrentStudent)
+router.route("/get-analytics").get(verifyJWT,isStudent, getAnalytics)
 
 //mentor features
 router.route("/get-current-mentor").get(verifyJWT, isMentor, getCurrentMentor)
